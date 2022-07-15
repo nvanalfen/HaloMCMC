@@ -1,0 +1,8 @@
+storage_location :->: full_back_results
+split :->: 9
+jackknife_cov :->: None
+front :->: False
+correlation_group :->: satsat
+values_f_name :->: static_halos_all_galaxy_omega_a=0.8006_gamma=-0.0386_seed=132358712.csv
+truth_f_name :->: static_halos_all_halo_omega_a=0.8006_gamma=-0.0386_seed=132358712.csv
+

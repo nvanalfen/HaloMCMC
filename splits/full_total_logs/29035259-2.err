@@ -1,0 +1,17 @@
+  0%|          | 0/10000 [00:00<?, ?it/s]  0%|          | 1/10000 [00:08<22:26:06,  8.08s/it]  0%|          | 2/10000 [00:16<22:23:36,  8.06s/it]  0%|          | 3/10000 [00:24<22:23:13,  8.06s/it]  0%|          | 4/10000 [00:32<22:19:18,  8.04s/it]  0%|          | 5/10000 [00:40<22:19:30,  8.04s/it]  0%|          | 6/10000 [00:48<22:19:39,  8.04s/it]  0%|          | 7/10000 [00:56<22:20:37,  8.05s/it]  0%|          | 8/10000 [01:04<22:19:57,  8.05s/it]  0%|          | 9/10000 [01:12<22:20:22,  8.05s/it]  0%|          | 10/10000 [01:20<22:20:31,  8.05s/it]Traceback (most recent call last):
+  File "/home/nvanalfen/miniconda3/envs/alignments/lib/python3.9/site-packages/emcee/ensemble.py", line 624, in __call__
+    return self.f(x, *self.args, **self.kwargs)
+  File "/scratch/nvanalfen/HaloMCMC/splits/split_halo_mcmc_script.py", line 139, in log_prob
+    model_instance._input_model_dictionary["satellites_orientation"].assign_satellite_orientation( table=model_instance.mock.galaxy_table )
+  File "/home/nvanalfen/github_repos/halotools_ia/halotools_ia/halotools_ia/ia_models/ia_model_components.py", line 529, in assign_satellite_orientation
+    A_v = axes_correlated_with_input_vector(major_input_vectors, p=p)
+  File "/home/nvanalfen/github_repos/halotools_ia/halotools_ia/halotools_ia/ia_models/ia_model_components.py", line 1347, in axes_correlated_with_input_vector
+    z_correlated_axes = axes_correlated_with_z(p, seed)
+  File "/home/nvanalfen/github_repos/halotools_ia/halotools_ia/halotools_ia/ia_models/ia_model_components.py", line 1295, in axes_correlated_with_z
+    cos_t = d.rvs(k)
+  File "/home/nvanalfen/miniconda3/envs/alignments/lib/python3.9/site-packages/scipy/stats/_distn_infrastructure.py", line 1058, in rvs
+    vals = self._rvs(*args)
+  File "/home/nvanalfen/github_repos/watson_distribution/watson_dist/watson_dist/watson_distribution.py", line 243, in _rvs
+    raise warn(msg)
+TypeError: exceptions must derive from BaseException
+  0%|          | 10/10000 [01:28<24:25:35,  8.80s/it]

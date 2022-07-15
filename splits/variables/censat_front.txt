@@ -1,0 +1,7 @@
+storage_location :->: front_results
+split :->: 9
+jackknife_cov :->: None
+front :->: True
+correlation_group :->: censat
+values_f_name :->: static_halos_galaxy_sat_shape_cen_pos_omegas_a=0.8006_gamma=-0.0386_seed=132358712.csv
+truth_f_name :->: static_halos_halo_sat_shape_cen_pos_omegas_a=0.8006_gamma=-0.0386_seed=132358712.csv
