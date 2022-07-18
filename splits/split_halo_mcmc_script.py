@@ -107,15 +107,37 @@ def mask_bad_halocat(halocat):
     bad_mask = (halocat.halo_table["halo_axisA_x"] == 0) & (halocat.halo_table["halo_axisA_y"] == 0) & (halocat.halo_table["halo_axisA_z"] == 0)
     halocat._halo_table = halocat.halo_table[ ~bad_mask ]
 
-def get_model():
+def get_model(ind=None):
+    if not ind is None:
+        return models[ind]
+        
     ind = model_ind[0]
     model = models[ind]
     ind += 1
     model_ind[0] = ind % len(models)
     return model
     
+def get_correlation(a, gamma, correlation_group ind):
+    model_instance = get_model(ind)
+    
+    # Reassign a and gamma for RadialSatellitesAlignmentStrength
+    model_instance.model_dictionary["satellites_radial_alignment_strength"].param_dict["a"] = a
+    model_instance.model_dictionary["satellites_radial_alignment_strength"].param_dict["gamma"] = gamma
+
+    model_instance.model_dictionary["satellites_radial_alignment_strength"].assign_satellite_alignment_strength( table=model_instance.mock.galaxy_table )
+        
+    model_instance._input_model_dictionary["satellites_orientation"].assign_satellite_orientation( table=model_instance.mock.galaxy_table )
+    model_instance._input_model_dictionary["centrals_orientation"].assign_central_orientation( table=model_instance.mock.galaxy_table )
+    
+    # Perform correlation functions on galaxies
+    coords1, orientations, coords2 = get_coords_and_orientations(model_instance, correlation_group=correlation_group)
+    #galaxy_coords, galaxy_orientations = get_galaxy_coordinates_and_orientations(model_instance, halocat)
+    #galaxy_omega, galaxy_eta, galaxy_xi = galaxy_alignment_correlations(galaxy_coords, galaxy_orientations, rbins)
+    omega = ed_3d( coords1, orientations, coords2, rbins, period=halocat.Lbox )
+    
+    return omega
+    
 def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_group):
-    model_instance = get_model()
     if len(theta) == 2:
         a, gamma = theta
     else:
@@ -125,27 +147,12 @@ def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_gro
     if a < -5.0 or a > 5.0:
         return -np.inf
 
-    avg_runs = 1
-    omegas = []
+    avg_runs = 5    
     
+    params = [ ( a, gamma, correlation group, ind ) for ind in range(avg_runs) ]
     
-    # Reassign a and gamma for RadialSatellitesAlignmentStrength
-    model_instance.model_dictionary["satellites_radial_alignment_strength"].param_dict["a"] = a
-    model_instance.model_dictionary["satellites_radial_alignment_strength"].param_dict["gamma"] = gamma
-
-    model_instance.model_dictionary["satellites_radial_alignment_strength"].assign_satellite_alignment_strength( table=model_instance.mock.galaxy_table )
-        
-    for i in range(avg_runs):
-        model_instance._input_model_dictionary["satellites_orientation"].assign_satellite_orientation( table=model_instance.mock.galaxy_table )
-        model_instance._input_model_dictionary["centrals_orientation"].assign_central_orientation( table=model_instance.mock.galaxy_table )
-        
-        # Perform correlation functions on galaxies
-        coords1, orientations, coords2 = get_coords_and_orientations(model_instance, correlation_group=correlation_group)
-        #galaxy_coords, galaxy_orientations = get_galaxy_coordinates_and_orientations(model_instance, halocat)
-        #galaxy_omega, galaxy_eta, galaxy_xi = galaxy_alignment_correlations(galaxy_coords, galaxy_orientations, rbins)
-        omega = ed_3d( coords1, orientations, coords2, rbins, period=halocat.Lbox )
-
-        omegas.append( omega )
+    pool = Pool()
+    omegas = pool.starmap( get_correlation, params )
     
     omegas = np.array( omegas )
     omega = np.mean( omegas, axis=0 )
@@ -188,7 +195,7 @@ def parse_args():
     
     return job, variable_f_name
 
-models = np.repeat(None, 8)
+models = np.repeat(None, 3)
 model_ind = np.array([0])
     
 if __name__ == "__main__":
@@ -294,9 +301,8 @@ if __name__ == "__main__":
         #with Pool() as pool:
         #    print("Starting")
         #    start = time.time()
-        with Pool(5) as pool:
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob, args=args, backend=backend, moves=moves, pool=pool)
-            sampler.run_mcmc(p0, 10000, store=True, progress=True)
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob, args=args, backend=backend, moves=moves)
+        sampler.run_mcmc(p0, 10000, store=True, progress=True)
         #    print(time.time()-start)
     
     except Exception as e:
