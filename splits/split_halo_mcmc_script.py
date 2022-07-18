@@ -117,7 +117,7 @@ def get_model(ind=None):
     model_ind[0] = ind % len(models)
     return model
     
-def get_correlation(a, gamma, correlation_group ind):
+def get_correlation(a, gamma, correlation_group, ind):
     model_instance = get_model(ind)
     
     # Reassign a and gamma for RadialSatellitesAlignmentStrength
@@ -138,6 +138,7 @@ def get_correlation(a, gamma, correlation_group ind):
     return omega
     
 def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_group):
+    start=time.time()
     if len(theta) == 2:
         a, gamma = theta
     else:
@@ -147,9 +148,9 @@ def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_gro
     if a < -5.0 or a > 5.0:
         return -np.inf
 
-    avg_runs = 5    
+    avg_runs = 10
     
-    params = [ ( a, gamma, correlation group, ind ) for ind in range(avg_runs) ]
+    params = [ ( a, gamma, correlation_group, ind ) for ind in range(avg_runs) ]
     
     pool = Pool()
     omegas = pool.starmap( get_correlation, params )
@@ -161,7 +162,8 @@ def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_gro
         diff = omega[:split] - y[:split]
     else:
         diff = omega[split:] - y[split:]
-    
+
+    print(time.time()-start)
     return -0.5 * np.dot( diff, np.dot( inv_cov, diff ) )
 
 global_nums = []
@@ -195,7 +197,7 @@ def parse_args():
     
     return job, variable_f_name
 
-models = np.repeat(None, 3)
+models = np.repeat(None, 10)
 model_ind = np.array([0])
     
 if __name__ == "__main__":
