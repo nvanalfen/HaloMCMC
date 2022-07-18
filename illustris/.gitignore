@@ -1,0 +1,8 @@
+back_logs/*.txt
+back_results/*.h5
+front_logs/*.txt
+front_results/*.h5
+full_back_logs/*.txt
+full_back_results/*.h5
+full_front_logs/*.txt
+full_front_results/*.h5
