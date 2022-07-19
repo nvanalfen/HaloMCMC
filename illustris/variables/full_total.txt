@@ -2,5 +2,5 @@ storage_location :->: full_total_results
 split :->: 0
 front :->: False
 correlation_group :->: all
-cov_f_name :->: TNG300-1_99-sample_3_ed_cov.npy
-truth_f_name :->: TNG300-1_99-sample_3_ed.npy
+cov_f_name :->: TNG300-1_99-sample_3_ed_cov_19_5x5x5.npy
+truth_f_name :->: TNG300-1_99-sample_3_ed_19_5x5x5.npy
