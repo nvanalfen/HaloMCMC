@@ -115,7 +115,6 @@ def get_model():
     return model
     
 def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_group):
-    print("HERE")
     model_instance = get_model()
     if len(theta) == 2:
         satellite_alignment_strength, central_alignment_strength = theta
