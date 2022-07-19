@@ -17,5 +17,5 @@
 source /home/nvanalfen/miniconda3/bin/activate
 conda activate alignments
 
-python illustris__halo_mcmc_script.py $SLURM_ARRAY_TASK_ID variables/full_total.txt
+python illustris_halo_mcmc_script.py $SLURM_ARRAY_TASK_ID variables/full_total.txt
 
