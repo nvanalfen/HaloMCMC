@@ -123,9 +123,6 @@ def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_gro
         satellite_alignment_strength = theta
         central_alignment_strength = 1
 
-    if a < -5.0 or a > 5.0:
-        return -np.inf
-
     avg_runs = 1
     omegas = []
     
