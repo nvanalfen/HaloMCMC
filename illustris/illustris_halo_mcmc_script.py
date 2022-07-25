@@ -180,7 +180,7 @@ def parse_args():
     
     return job, variable_f_name
 
-models = np.repeat(None, 3)
+models = np.repeat(None, 10)
 model_ind = np.array([0])
     
 if __name__ == "__main__":
@@ -234,13 +234,12 @@ if __name__ == "__main__":
         models[i] = model_instance
 
     ndim, nwalkers = 2, 5
-    #ndim, nwalkers = 1, 4
 
     p0 = 2*((np.random.rand(nwalkers, ndim)) - 0.5)
 
 
     cov = np.load(cov_f_name)
-    n = 3*3*3
+    n = 5*5*5
     p = len(rbin_centers)
 
     factor = (n-p-2)/(n-1)
@@ -260,9 +259,6 @@ if __name__ == "__main__":
         args = [inv_cov, rbin_centers, truth_mean, halocat, rbins, split, front, correlation_group]
         moves = [emcee.moves.StretchMove(a=2),emcee.moves.StretchMove(a=1.1),emcee.moves.StretchMove(a=1.5),emcee.moves.StretchMove(a=1.3)]
 
-        #with Pool() as pool:
-        #    print("Starting")
-        #    start = time.time()
         with Pool() as pool:
             sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob, args=args, backend=backend, moves=moves, pool=pool)
             sampler.run_mcmc(p0, 10000, store=True, progress=True)

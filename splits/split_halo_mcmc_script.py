@@ -11,6 +11,8 @@ from halotools_ia.ia_models.ia_strength_models import RadialSatelliteAlignmentSt
 
 from halotools_ia.ia_models.nfw_phase_space import AnisotropicNFWPhaseSpace
 
+from intrinsic_alignments.ia_models.occupation_models import SubHaloPositions, IsotropicSubhaloPositions, SemiIsotropicSubhaloPositions
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -229,9 +231,11 @@ if __name__ == "__main__":
 
     # MODELS
     cens_occ_model = Leauthaud11Cens
+    #cens_occ_model = SubHaloPositions
     cens_prof_model = TrivialPhaseSpace
     cens_orientation = CentralAlignment
     sats_occ_model = Leauthaud11Sats
+    #sat_occ_model = SubHaloPositions
     sats_prof_model1 = SubhaloPhaseSpace
     prof_args1 = ("satellites", np.logspace(10.5, 15.2, 15))
     #sats_orientation1 = SubhaloAlignment(satellite_alignment_strength=0.5, halocat=halocat)
