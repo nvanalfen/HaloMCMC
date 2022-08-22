@@ -237,7 +237,7 @@ if __name__ == "__main__":
     sats_occ_model = Leauthaud11Sats
     #sat_occ_model = SubHaloPositions
     sats_prof_model1 = NFWPhaseSpace
-    prof_args1 = ("satellites", np.logspace(10.5, 15.2, 15))
+    #prof_args1 = ("satellites", np.logspace(10.5, 15.2, 15))
     #sats_orientation1 = SubhaloAlignment(satellite_alignment_strength=0.5, halocat=halocat)
     sats_orientation2 = RadialSatelliteAlignment
     #sats_orientation1 = SubhaloAlignment
@@ -252,7 +252,7 @@ if __name__ == "__main__":
         model_instance = HodModelFactory(centrals_occupation = cens_occ_model(),
                                          centrals_profile = cens_prof_model(),
                                          satellites_occupation = sats_occ_model(),
-                                         satellites_profile = sats_prof_model1(*prof_args1),
+                                         satellites_profile = sats_prof_model1(),
                                          satellites_radial_alignment_strength = sats_strength,
                                          centrals_orientation = cens_orientation(alignment_strength=central_alignment),
                                          satellites_orientation = sats_orientation2(satellite_alignment_strength=1, halocat=halocat),
