@@ -209,11 +209,11 @@ if __name__ == "__main__":
     mask_bad_halocat(halocat)
 
     # MODELS
-    cens_occ_model = Leauthaud11Cens()
+    cens_occ_model = Zheng07Cens()
     cens_prof_model = TrivialPhaseSpace()
     cens_orientation = CentralAlignment()
     prof_args = ("satellites", np.logspace(10.5, 15.2, 15))
-    sats_occ_model = Leauthaud11Sats()
+    sats_occ_model = Zheng07Sats()
     sats_prof_model = SubhaloPhaseSpace(*prof_args)
     sats_orientation = SubhaloAlignment(satellite_alignment_strength=1, halocat=halocat)
 
