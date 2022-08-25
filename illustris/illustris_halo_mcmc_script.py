@@ -209,13 +209,13 @@ if __name__ == "__main__":
     mask_bad_halocat(halocat)
 
     # MODELS
-    cens_occ_model = Leauthaud11Cens
-    cens_prof_model = TrivialPhaseSpace
-    cens_orientation = CentralAlignment
-    sats_occ_model = Leauthaud11Sats
-    sats_prof_model = SubhaloPhaseSpace
+    cens_occ_model = Leauthaud11Cens()
+    cens_prof_model = TrivialPhaseSpace()
+    cens_orientation = CentralAlignment()
     prof_args = ("satellites", np.logspace(10.5, 15.2, 15))
-    sats_orientation = SubhaloAlignment
+    sats_occ_model = Leauthaud11Sats(*prof_args)
+    sats_prof_model = SubhaloPhaseSpace()
+    sats_orientation = SubhaloAlignment(satellite_alignment_strength=1, halocat=halocat)
 
     if sample_name == 'sample_1':
         cens_occ_model.param_dict['logMmin'] = 12.54
@@ -250,12 +250,12 @@ if __name__ == "__main__":
     
     for i in range(len(models)):
 
-        model_instance = HodModelFactory(centrals_occupation = cens_occ_model(),
-                                         centrals_profile = cens_prof_model(),
-                                         satellites_occupation = sats_occ_model(),
-                                         satellites_profile = sats_prof_model(*prof_args),
-                                         centrals_orientation = cens_orientation(alignment_strength=central_alignment),
-                                         satellites_orientation = sats_orientation(satellite_alignment_strength=1, halocat=halocat),
+        model_instance = HodModelFactory(centrals_occupation = cens_occ_model,
+                                         centrals_profile = cens_prof_model,
+                                         satellites_occupation = sats_occ_model,
+                                         satellites_profile = sats_prof_model,
+                                         centrals_orientation = cens_orientation,
+                                         satellites_orientation = sats_orientation,
                                          model_feature_calling_sequence = (
                                          'centrals_occupation',
                                          'centrals_profile',
