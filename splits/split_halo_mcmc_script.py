@@ -140,7 +140,6 @@ def get_correlation(a, gamma, correlation_group, ind):
     return omega
     
 def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_group):
-    start=time.time()
     if len(theta) == 2:
         a, gamma = theta
     else:
@@ -165,7 +164,6 @@ def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_gro
     else:
         diff = omega[split:] - y[split:]
 
-    print(time.time()-start)
     return -0.5 * np.dot( diff, np.dot( inv_cov, diff ) )
 
 global_nums = []

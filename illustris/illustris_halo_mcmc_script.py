@@ -113,8 +113,26 @@ def get_model():
     ind += 1
     model_ind[0] = ind % len(models)
     return model
+
+def get_correlation(sats_alignment, cens_alignment, correlation_group, ind):
+    model_instance = get_model(ind)
     
-def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_group):
+    # Reassign a and gamma for RadialSatellitesAlignmentStrength
+    model_instance.model_dictionary["satellites_orientation"].param_dict["satellite_alignment_strength"] = sats_alignment
+    model_instance.model_dictionary["centrals_orientation"].param_dict["central_alignment_strength"] = cens_alignment
+        
+    model_instance._input_model_dictionary["satellites_orientation"].assign_satellite_orientation( table=model_instance.mock.galaxy_table )
+    model_instance._input_model_dictionary["centrals_orientation"].assign_central_orientation( table=model_instance.mock.galaxy_table )
+    
+    # Perform correlation functions on galaxies
+    coords1, orientations, coords2 = get_coords_and_orientations(model_instance, correlation_group=correlation_group)
+    #galaxy_coords, galaxy_orientations = get_galaxy_coordinates_and_orientations(model_instance, halocat)
+    #galaxy_omega, galaxy_eta, galaxy_xi = galaxy_alignment_correlations(galaxy_coords, galaxy_orientations, rbins)
+    omega = ed_3d( coords1, orientations, coords2, rbins, period=halocat.Lbox )
+    
+    return omega
+    
+def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_group, cores):
     model_instance = get_model()
     if len(theta) == 2:
         satellite_alignment_strength, central_alignment_strength = theta
@@ -122,25 +140,13 @@ def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_gro
         satellite_alignment_strength = theta
         central_alignment_strength = 1
 
-    avg_runs = 1
+    avg_runs = 10
     omegas = []
     
+    params = [ ( a, gamma, correlation_group, ind ) for ind in range(avg_runs) ]
     
-    # Reassign a and gamma for RadialSatellitesAlignmentStrength
-    model_instance.model_dictionary["satellites_orientation"].param_dict["satellite_alignment_strength"] = satellite_alignment_strength
-    model_instance.model_dictionary["centrals_orientation"].param_dict["central_alignment_strength"] = central_alignment_strength
-        
-    for i in range(avg_runs):
-        model_instance._input_model_dictionary["satellites_orientation"].assign_satellite_orientation( table=model_instance.mock.galaxy_table )
-        model_instance._input_model_dictionary["centrals_orientation"].assign_central_orientation( table=model_instance.mock.galaxy_table )
-        
-        # Perform correlation functions on galaxies
-        coords1, orientations, coords2 = get_coords_and_orientations(model_instance, correlation_group=correlation_group)
-        #galaxy_coords, galaxy_orientations = get_galaxy_coordinates_and_orientations(model_instance, halocat)
-        #galaxy_omega, galaxy_eta, galaxy_xi = galaxy_alignment_correlations(galaxy_coords, galaxy_orientations, rbins)
-        omega = ed_3d( coords1, orientations, coords2, rbins, period=halocat.Lbox )
-
-        omegas.append( omega )
+    pool = Pool(cores)
+    omegas = pool.starmap( get_correlation, params )
     
     omegas = np.array( omegas )
     omega = np.mean( omegas, axis=0 )
@@ -171,8 +177,10 @@ def read_variables(f_name):
     correlation_group = vars["correlation_group"]
     cov_f_name = vars[ "cov_f_name" ]
     truth_f_name = vars["truth_f_name"]
+    sample_name = vars["sample_name"]
+    cores = int( vars["cores"] )
     
-    return storage_location, split, front, correlation_group, cov_f_name, truth_f_name
+    return storage_location, split, front, correlation_group, sample_name, cov_f_name, truth_f_name, cores
 
 def parse_args():
     job = sys.argv[1]
@@ -185,7 +193,7 @@ model_ind = np.array([0])
     
 if __name__ == "__main__":
     job, variable_f_name =  parse_args()
-    storage_location, split, front, correlation_group, cov_f_name, truth_f_name = \
+    storage_location, split, front, correlation_group, sample_name, cov_f_name, truth_f_name, cores = \
                         read_variables( variable_f_name )
                         
     truth_mean = np.load(truth_f_name )
@@ -205,22 +213,49 @@ if __name__ == "__main__":
     cens_prof_model = TrivialPhaseSpace
     cens_orientation = CentralAlignment
     sats_occ_model = Leauthaud11Sats
-    sats_prof_model1 = SubhaloPhaseSpace
-    prof_args1 = ("satellites", np.logspace(10.5, 15.2, 15))
-    #sats_orientation1 = SubhaloAlignment(satellite_alignment_strength=0.5, halocat=halocat)
-    sats_orientation2 = SubhaloAlignment
-    #sats_orientation1 = SubhaloAlignment
+    sats_prof_model = SubhaloPhaseSpace
+    prof_args = ("satellites", np.logspace(10.5, 15.2, 15))
+    sats_orientation = SubhaloAlignment
 
-    central_alignment = 1
+    if sample_name == 'sample_1':
+        cens_occ_model.param_dict['logMmin'] = 12.54
+        cens_occ_model.param_dict['sigma_logM'] = 0.26
+
+        sats_occ_model.param_dict['alpha'] = 1.0
+        sats_occ_model.param_dict['logM0'] = 12.68
+        sats_occ_model.param_dict['logM1'] = 13.48
+
+        cens_orientation.param_dict['central_alignment_strength'] = 0.755
+        sats_orientation.param_dict['satellite_alignment_strength'] = 0.279
+    elif sample_name == 'sample_2':
+        cens_occ_model.param_dict['logMmin'] = 11.93
+        cens_occ_model.param_dict['sigma_logM'] = 0.26
+
+        sats_occ_model.param_dict['alpha'] = 1.0
+        sats_occ_model.param_dict['logM0'] = 12.05
+        sats_occ_model.param_dict['logM1'] = 12.85
+
+        cens_orientation.param_dict['central_alignment_strength'] = 0.64
+        sats_orientation.param_dict['satellite_alignment_strength'] = 0.084
+    elif sample_name =='sample_3':
+        cens_occ_model.param_dict['logMmin'] = 11.61
+        cens_occ_model.param_dict['sigma_logM'] = 0.26
+
+        sats_occ_model.param_dict['alpha'] = 1.0
+        sats_occ_model.param_dict['logM0'] = 11.8
+        sats_occ_model.param_dict['logM1'] = 12.6
+
+        cens_orientation.param_dict['central_alignment_strength'] = 0.57172919
+        sats_orientation.param_dict['satellite_alignment_strength'] = 0.01995
     
     for i in range(len(models)):
 
         model_instance = HodModelFactory(centrals_occupation = cens_occ_model(),
                                          centrals_profile = cens_prof_model(),
                                          satellites_occupation = sats_occ_model(),
-                                         satellites_profile = sats_prof_model1(*prof_args1),
+                                         satellites_profile = sats_prof_model(*prof_args),
                                          centrals_orientation = cens_orientation(alignment_strength=central_alignment),
-                                         satellites_orientation = sats_orientation2(satellite_alignment_strength=1, halocat=halocat),
+                                         satellites_orientation = sats_orientation(satellite_alignment_strength=1, halocat=halocat),
                                          model_feature_calling_sequence = (
                                          'centrals_occupation',
                                          'centrals_profile',
@@ -256,12 +291,11 @@ if __name__ == "__main__":
     try:
         f_name = os.path.join(storage_location,"MCMC_"+job+".h5")
         backend = emcee.backends.HDFBackend(f_name)
-        args = [inv_cov, rbin_centers, truth_mean, halocat, rbins, split, front, correlation_group]
+        args = [inv_cov, rbin_centers, truth_mean, halocat, rbins, split, front, correlation_group, cores]
         moves = [emcee.moves.StretchMove(a=2),emcee.moves.StretchMove(a=1.1),emcee.moves.StretchMove(a=1.5),emcee.moves.StretchMove(a=1.3)]
 
-        with Pool() as pool:
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob, args=args, backend=backend, moves=moves, pool=pool)
-            sampler.run_mcmc(p0, 10000, store=True, progress=True)
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, log_prob, args=args, backend=backend, moves=moves)
+        sampler.run_mcmc(p0, 10000, store=True, progress=True)
         #    print(time.time()-start)
     
     except Exception as e:
