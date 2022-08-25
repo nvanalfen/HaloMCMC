@@ -1,4 +1,4 @@
-*_logs/*.txt
-*_logs/*.err
-*_logs/*.out
-*_results/*.h5
+*_logs*/*.txt
+*_logs*/*.err
+*_logs*/*.out
+*_results*/*.h5

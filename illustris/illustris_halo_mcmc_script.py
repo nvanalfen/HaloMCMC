@@ -250,7 +250,7 @@ if __name__ == "__main__":
     
     for i in range(len(models)):
 
-        model_instance = HodModelFactory(centrals_occupation = cens_occ_model,
+        models[i] = HodModelFactory(centrals_occupation = cens_occ_model,
                                          centrals_profile = cens_prof_model,
                                          satellites_occupation = sats_occ_model,
                                          satellites_profile = sats_prof_model,
@@ -264,9 +264,9 @@ if __name__ == "__main__":
                                          'centrals_orientation',
                                          'satellites_orientation')
                                         )
-
-        model_instance.populate_mock(halocat, seed=132358712)
-        models[i] = model_instance
+        print(i)
+        models[i].populate_mock(halocat, seed=132358712)
+        #models[i] = model_instance
 
     ndim, nwalkers = 2, 5
 
