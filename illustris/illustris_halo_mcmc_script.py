@@ -213,8 +213,8 @@ if __name__ == "__main__":
     cens_prof_model = TrivialPhaseSpace()
     cens_orientation = CentralAlignment()
     prof_args = ("satellites", np.logspace(10.5, 15.2, 15))
-    sats_occ_model = Leauthaud11Sats(*prof_args)
-    sats_prof_model = SubhaloPhaseSpace()
+    sats_occ_model = Leauthaud11Sats()
+    sats_prof_model = SubhaloPhaseSpace(*prof_args)
     sats_orientation = SubhaloAlignment(satellite_alignment_strength=1, halocat=halocat)
 
     if sample_name == 'sample_1':
