@@ -7,7 +7,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=10
 #SBATCH --cores-per-socket=10
-#SBATCH --array=1-10%10
+#SBATCH --array=1-20%20
 #SBATCH --output=full_total_logs/%A-%a.out
 #SBATCH --error=full_total_logs/%A-%a.err
 #SBATCH --mail-user=nvanalfen2@gmail.com

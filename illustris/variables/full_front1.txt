@@ -1,8 +1,8 @@
-storage_location :->: full_front_results3
+storage_location :->: full_front_results1
 split :->: 9
 front :->: True
 correlation_group :->: all
 cov_f_name :->: TNG300-1_99-sample_3_ed_cov_19_5x5x5.npy
 truth_f_name :->: TNG300-1_99-sample_3_ed_19_5x5x5.npy
-sample_name :->: sample_3
+sample_name :->: sample_1
 cores :->: 10

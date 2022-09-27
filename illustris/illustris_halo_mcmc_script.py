@@ -11,6 +11,8 @@ from halotools_ia.ia_models.ia_strength_models import RadialSatelliteAlignmentSt
 
 from halotools_ia.ia_models.nfw_phase_space import AnisotropicNFWPhaseSpace
 
+from intrinsic_alignments.ia_models.occupation_models import SubHaloPositions, IsotropicSubhaloPositions, SemiIsotropicSubhaloPositions
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -107,13 +109,16 @@ def mask_bad_halocat(halocat):
     bad_mask = (halocat.halo_table["halo_axisA_x"] == 0) & (halocat.halo_table["halo_axisA_y"] == 0) & (halocat.halo_table["halo_axisA_z"] == 0)
     halocat._halo_table = halocat.halo_table[ ~bad_mask ]
 
-def get_model():
+def get_model(ind=None):
+    if not ind is None:
+        return models[ind]
+        
     ind = model_ind[0]
     model = models[ind]
     ind += 1
     model_ind[0] = ind % len(models)
     return model
-
+    
 def get_correlation(sats_alignment, cens_alignment, correlation_group, ind):
     model_instance = get_model(ind)
     
@@ -143,7 +148,7 @@ def log_prob(theta, inv_cov, x, y, halocat, rbins, split, front, correlation_gro
     avg_runs = 10
     omegas = []
     
-    params = [ ( a, gamma, correlation_group, ind ) for ind in range(avg_runs) ]
+    params = [ ( satellite_alignment_strength, central_alignment_strength, correlation_group, ind ) for ind in range(avg_runs) ]
     
     pool = Pool(cores)
     omegas = pool.starmap( get_correlation, params )
@@ -195,29 +200,30 @@ if __name__ == "__main__":
     job, variable_f_name =  parse_args()
     storage_location, split, front, correlation_group, sample_name, cov_f_name, truth_f_name, cores = \
                         read_variables( variable_f_name )
-                        
-    truth_mean = np.load(truth_f_name )
+
+    truth_mean = np.load(truth_f_name)
 
     rbins = np.logspace(-1,1.4,20)
     rbin_centers = (rbins[:-1]+rbins[1:])/2.0
 
     cache = HaloTableCache()
-    #for entry in cache.log: print(entry)
 
-    #halocat = CachedHaloCatalog(simname='multidark', redshift=0)
     halocat = CachedHaloCatalog(simname='bolshoi', halo_finder='rockstar', redshift=0, version_name='halotools_v0p4')
     mask_bad_halocat(halocat)
 
     # MODELS
     cens_occ_model = Zheng07Cens()
+    #cens_occ_model = Leauthaud11Cens()
     cens_prof_model = TrivialPhaseSpace()
     cens_orientation = CentralAlignment()
     prof_args = ("satellites", np.logspace(10.5, 15.2, 15))
     sats_occ_model = Zheng07Sats()
+    #sats_occ_model = Leauthaud11Sats()
     sats_prof_model = SubhaloPhaseSpace(*prof_args)
     sats_orientation = SubhaloAlignment(satellite_alignment_strength=1, halocat=halocat)
-
+    
     if sample_name == 'sample_1':
+        print("A")
         cens_occ_model.param_dict['logMmin'] = 12.54
         cens_occ_model.param_dict['sigma_logM'] = 0.26
 
@@ -228,6 +234,7 @@ if __name__ == "__main__":
         cens_orientation.param_dict['central_alignment_strength'] = 0.755
         sats_orientation.param_dict['satellite_alignment_strength'] = 0.279
     elif sample_name == 'sample_2':
+        print("B")
         cens_occ_model.param_dict['logMmin'] = 11.93
         cens_occ_model.param_dict['sigma_logM'] = 0.26
 
@@ -238,6 +245,7 @@ if __name__ == "__main__":
         cens_orientation.param_dict['central_alignment_strength'] = 0.64
         sats_orientation.param_dict['satellite_alignment_strength'] = 0.084
     elif sample_name =='sample_3':
+        print("C")
         cens_occ_model.param_dict['logMmin'] = 11.61
         cens_occ_model.param_dict['sigma_logM'] = 0.26
 
@@ -250,7 +258,7 @@ if __name__ == "__main__":
     
     for i in range(len(models)):
 
-        models[i] = HodModelFactory(centrals_occupation = cens_occ_model,
+        model_instance = HodModelFactory(centrals_occupation = cens_occ_model,
                                          centrals_profile = cens_prof_model,
                                          satellites_occupation = sats_occ_model,
                                          satellites_profile = sats_prof_model,
@@ -264,14 +272,15 @@ if __name__ == "__main__":
                                          'centrals_orientation',
                                          'satellites_orientation')
                                         )
+
         print(i)
-        models[i].populate_mock(halocat, seed=132358712)
-        #models[i] = model_instance
+        model_instance.populate_mock(halocat, seed=132358712)
+        models[i] = model_instance
 
     ndim, nwalkers = 2, 5
+    #ndim, nwalkers = 1, 4
 
     p0 = 2*((np.random.rand(nwalkers, ndim)) - 0.5)
-
 
     cov = np.load(cov_f_name)
     n = 5*5*5

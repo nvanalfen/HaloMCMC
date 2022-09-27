@@ -229,10 +229,12 @@ if __name__ == "__main__":
 
     # MODELS
     cens_occ_model = Leauthaud11Cens
+    #cens_occ_model = Zheng07Cens
     #cens_occ_model = SubHaloPositions
     cens_prof_model = TrivialPhaseSpace
     cens_orientation = CentralAlignment
     sats_occ_model = Leauthaud11Sats
+    #sats_occ_model = Zheng07Sats
     #sat_occ_model = SubHaloPositions
     sats_prof_model1 = SubhaloPhaseSpace
     prof_args1 = ("satellites", np.logspace(10.5, 15.2, 15))
@@ -264,6 +266,7 @@ if __name__ == "__main__":
                                          'satellites_orientation')
                                         )
 
+        print(i)
         model_instance.populate_mock(halocat, seed=132358712)
         model_instance._input_model_dictionary["satellites_orientation"].inherit_halocat_properties( Lbox = halocat.Lbox )
         models[i] = model_instance
